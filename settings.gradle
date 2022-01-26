@@ -1,0 +1,16 @@
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+//工程名称
+rootProject.name = "n-library"
+
+//模块example
+include ':app'
+
+//模块库
+include ':nlibrary'
