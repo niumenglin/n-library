@@ -9,7 +9,10 @@ import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
-
+/**
+ * 屏幕工具类
+ * dp、sp、px转换；屏幕宽度与高度；状态栏高度
+ */
 public class NDisplayUtil {
     public static int dp2px(float dp, Resources resources) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.getDisplayMetrics());
