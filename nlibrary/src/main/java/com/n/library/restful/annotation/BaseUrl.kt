@@ -1,7 +1,5 @@
 package com.n.library.restful.annotation
 
-import java.lang.annotation.RetentionPolicy
-
 /**
  * 域名
  * @BaseUrl("https://api.n.org/as/")

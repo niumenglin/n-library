@@ -175,6 +175,17 @@ class MethodParser(
         }
     }
 
+    fun newRequest():NRequest {
+        var request = NRequest()
+        request.domainUrl = domainUrl
+        request.returnType = returnType
+        request.relativeUrl = relativeUrl
+        request.parameters = parameters
+        request.headers = headers
+        request.httpMethod = httpMethod
+        return request
+    }
+
 
     companion object {
         fun parse(baseUrl: String, method: Method, args: Array<Any>): MethodParser {
