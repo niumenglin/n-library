@@ -14,13 +14,13 @@ class MethodParser(
     args: Array<Any>
 ) {
 
-    private lateinit var domainUrl: String
+    private var domainUrl: String?=null
     private var formPost: Boolean = true
     private var httpMethod: Int = -1
     private lateinit var relativeUrl: String
     private lateinit var returnType: Type
     private val headers: MutableMap<String, String> = mutableMapOf()
-    private val parameters: MutableMap<String, Any> = mutableMapOf()
+    private val parameters: MutableMap<String, String> = mutableMapOf()
 
 
     init {
@@ -46,7 +46,7 @@ class MethodParser(
      */
     //解析方法泛型返回值类型
     private fun parseMethodReturnType(method: Method) {
-        if (method.returnType != NCall::class) {
+        if (method.returnType != NCall::class.java) {
             //print method name
             throw IllegalStateException(
                 String.format(
@@ -98,7 +98,7 @@ class MethodParser(
             if (annotation is Field){
                 val key = annotation.value
                 val value = args[index]
-                parameters[key] = value
+                parameters[key] = value.toString()
             } else if (annotation is Path){
                 val replaceName = annotation.value
                 val replacement = value.toString()
@@ -164,10 +164,10 @@ class MethodParser(
                 //抛出注解异常
                 throw IllegalStateException("cannot handle method annotation:" + annotation.javaClass.toString())
             }
+        }
 
-            require(!(httpMethod != NRequest.METHOD.GET) && !(httpMethod != NRequest.METHOD.POST)) {
-                String.format("method %s must has one of GET,POST", method.name)
-            }
+        require(httpMethod == NRequest.METHOD.GET || httpMethod == NRequest.METHOD.POST) {
+            String.format("method %s must has one of GET,POST", method.name)
         }
 
         if (domainUrl == null){
@@ -183,6 +183,7 @@ class MethodParser(
         request.parameters = parameters
         request.headers = headers
         request.httpMethod = httpMethod
+        request.formPost = formPost
         return request
     }
 

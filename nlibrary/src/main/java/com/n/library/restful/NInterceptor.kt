@@ -1,7 +1,5 @@
 package com.n.library.restful
 
-import android.security.KeyChain
-
 /**
  * 拦截器
  */
