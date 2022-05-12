@@ -10,11 +10,10 @@ import java.lang.reflect.Type
  */
 class MethodParser(
     var baseUrl: String,
-    method: Method,
-    args: Array<Any>
+    method: Method
 ) {
 
-    private var domainUrl: String?=null
+    private var domainUrl: String? = null
     private var formPost: Boolean = true
     private var httpMethod: Int = -1
     private lateinit var relativeUrl: String
@@ -28,7 +27,7 @@ class MethodParser(
         parseMethodAnnotations(method)
 
         //parse method parameters such as Path，Field
-        parseMethodParameters(method, args)
+//        parseMethodParameters(method, args)
 
         //parse method generic return type
         parseMethodReturnType(method)
@@ -74,6 +73,9 @@ class MethodParser(
 
     //解析方法入参
     private fun parseMethodParameters(method: Method, args: Array<Any>) {
+        //每次调用api接口时  应该吧上一次解析到的参数清理掉，因为methodParser存在复用
+        parameters.clear()
+
         //@Path("province") province:Int,@Field(page) page:Int
         val parameterAnnotations = method.parameterAnnotations
         val equals = parameterAnnotations.size == args.size
@@ -86,47 +88,47 @@ class MethodParser(
         }
 
         //args
-        for (index in args.indices){
+        for (index in args.indices) {
             val annotations = parameterAnnotations[index]
-            require(annotations.size <= 1){"filed can only has one annotation :index = $index"}
+            require(annotations.size <= 1) { "filed can only has one annotation :index = $index" }
 
             val value = args[index]
             //效验，不符合基本数据类规则
-            require(isPrimitive(value)){"8 basic types are supported for now,index=$index"}
+            require(isPrimitive(value)) { "8 basic types are supported for now,index=$index" }
 
             val annotation = annotations[0]
-            if (annotation is Field){
+            if (annotation is Field) {
                 val key = annotation.value
                 val value = args[index]
                 parameters[key] = value.toString()
-            } else if (annotation is Path){
+            } else if (annotation is Path) {
                 val replaceName = annotation.value
                 val replacement = value.toString()
-                if (replaceName!=null&&replacement!=null){
-                    val newRelativeUrl = relativeUrl.replace("{$replaceName}",replacement)
+                if (replaceName != null && replacement != null) {
+                    val newRelativeUrl = relativeUrl.replace("{$replaceName}", replacement)
                     relativeUrl = newRelativeUrl
                 }
             } else {
-                throw IllegalStateException("cannot handle parameter annotation :"+annotation.javaClass.toString())
+                throw IllegalStateException("cannot handle parameter annotation :" + annotation.javaClass.toString())
             }
         }
     }
 
-    private fun isPrimitive(value: Any):Boolean {
+    private fun isPrimitive(value: Any): Boolean {
         //String
-        if (value.javaClass == String::class.java){
+        if (value.javaClass == String::class.java) {
             return true
         }
         try {
             //int byte short long boolean char double float
             val field = value.javaClass.getField("TYPE")
             val clazz = field[null] as Class<*>
-            if (clazz.isPrimitive){//8 basic types
+            if (clazz.isPrimitive) {//8 basic types
                 return true
             }
-        }catch (e:IllegalStateException){
+        } catch (e: IllegalStateException) {
             e.printStackTrace()
-        }catch (e:NoSuchFileException){
+        } catch (e: NoSuchFileException) {
             e.printStackTrace()
         }
         return false
@@ -170,13 +172,16 @@ class MethodParser(
             String.format("method %s must has one of GET,POST", method.name)
         }
 
-        if (domainUrl == null){
+        if (domainUrl == null) {
             domainUrl = baseUrl
         }
     }
 
-    fun newRequest():NRequest {
-        var request = NRequest()
+    fun newRequest(method: Method, args: Array<out Any>?): NRequest {
+        val arguments: Array<Any> = args as Array<Any>? ?: arrayOf()
+        parseMethodParameters(method, arguments)
+
+        val request = NRequest()
         request.domainUrl = domainUrl
         request.returnType = returnType
         request.relativeUrl = relativeUrl
@@ -189,8 +194,8 @@ class MethodParser(
 
 
     companion object {
-        fun parse(baseUrl: String, method: Method, args: Array<Any>): MethodParser {
-            return MethodParser(baseUrl, method, args)
+        fun parse(baseUrl: String, method: Method): MethodParser {
+            return MethodParser(baseUrl, method)
         }
     }
 
